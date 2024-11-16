@@ -4,7 +4,6 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.ElasticsearchTransport;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
-import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponseInterceptor;
@@ -18,7 +17,7 @@ import org.elasticsearch.client.RestClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * es配置类
@@ -30,15 +29,12 @@ public class EsConfig {
 
     @Bean
     public ElasticsearchClient elasticsearchClient() {
-        String serverUrl = "http://localhost:9200";
-        String apiKey = "VnVhQ2ZHY0JDZGJrU...";
-
-        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials("", ""));
         RestClient restClient = RestClient.builder(new HttpHost("localhost", 9200))
                 .setHttpClientConfigCallback(httpClientBuilder -> {
                     httpClientBuilder.disableAuthCaching();
-                    httpClientBuilder.setDefaultHeaders(Arrays.asList(
+                    httpClientBuilder.setDefaultHeaders(Collections.singletonList(
                             new BasicHeader(
                                     HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString())));
                     httpClientBuilder.addInterceptorLast((HttpResponseInterceptor)
@@ -46,13 +42,6 @@ public class EsConfig {
                                     response.addHeader("X-Elastic-Product", "Elasticsearch"));
                     return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                 }).build();
-        // RestClient restClient = RestClient
-        //         .builder(HttpHost.create(serverUrl))
-        //         .setDefaultHeaders(new Header[]{
-        //                 new BasicHeader("Authorization", "ApiKey " + apiKey)
-        //         })
-        //         .build();
-
         ElasticsearchTransport transport = new RestClientTransport(
                 restClient, new JacksonJsonpMapper());
 
